@@ -23,8 +23,9 @@
 
 #   Set Paths
 #   ------------------------------------------------------------
-    export PATH="$PATH:/usr/local/bin/"
+    export PATH="$PATH:/usr/local/bin/:/Users/naver/bin"
     export PATH="/usr/local/git/bin:/sw/bin/:/usr/local/bin:/usr/local/:/usr/local/sbin:/usr/local/mysql/bin:$PATH"
+    export PATH="$PATH:/Users/naver/grpc/bin/"
 
 #   Set Default Editor (change 'Nano' to the editor of your choice)
 #   ------------------------------------------------------------
@@ -44,7 +45,8 @@
     export GOPATH=/Users/naver/gopath
     export PATH=$PATH:$GOPATH/bin
 
-    export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_51.jdk/Contents/Home
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home
+    export SPINNAKER_HOME=/Users/naver/spinnaker
 #   -----------------------------
 #   2.  MAKE TERMINAL BETTER
 #   -----------------------------
@@ -72,7 +74,7 @@ alias show_options='shopt'                  # Show_options: display bash options
 alias fix_stty='stty sane'                  # fix_stty:     Restore terminal settings when screwed up
 alias cic='set completion-ignore-case On'   # cic:          Make tab-completion case-insensitive
 mcd () { mkdir -p "$1" && cd "$1"; }        # mcd:          Makes new Dir and jumps inside
-trash () { command mv "$@" ~/.Trash ; }     # trash:        Moves a file to the MacOS trash
+#trash () { command mv "$@" ~/.Trash ; }     # trash:        Moves a file to the MacOS trash
 ql () { qlmanage -p "$*" >& /dev/null; }    # ql:           Opens any file in MacOS Quicklook Preview
 alias DT='tee ~/Desktop/terminalOut.txt'    # DT:           Pipe content to file on MacOS Desktop
 
@@ -354,3 +356,62 @@ httpHeaders () { /usr/bin/curl -I -L $@ ; }             # httpHeaders:      Grab
 
 
 set ts=4
+
+bind Space:magic-space
+
+
+# ghq + peco
+# From http://qiita.com/yungsang/items/09890a06d204bf398eea by yungsang
+
+export HISTCONTROL="ignoredups"
+
+peco-history() {
+  local NUM=$(history | wc -l)
+  local FIRST=$((-1*(NUM-1)))
+
+  if [ $FIRST -eq 0 ] ; then
+    # Remove the last entry, "peco-history"
+    history -d $((HISTCMD-1))
+    echo "No history" >&2
+    return
+  fi
+
+  local CMD=$(fc -l $FIRST | sort -k 2 -k 1nr | uniq -f 1 | sort -nr | sed -E 's/^[0-9]+[[:blank:]]+//' | peco | head -n 1)
+
+  if [ -n "$CMD" ] ; then
+    # Replace the last entry, "peco-history", with $CMD
+    history -s $CMD
+
+    if type osascript > /dev/null 2>&1 ; then
+      # Send UP keystroke to console
+      (osascript -e 'tell application "System Events" to keystroke (ASCII character 30)' &)
+    fi
+
+    # Uncomment below to execute it here directly
+    # echo $CMD >&2
+    # eval $CMD
+  else
+    # Remove the last entry, "peco-history"
+    history -d $((HISTCMD-1))
+  fi
+}
+bind '"\C-r":"peco-history\n"'
+
+# From https://qiita.com/b4b4r07/items/9e1bbffb1be70b6ce033
+peco-src() {
+    local selected=""
+    READLINE_LINE=""
+    selected="$(ghq list --full-path | peco --query="$READLINE_LINE")"
+    if [ -n "$selected" ]; then
+	builtin cd ${selected}; ll;
+#READLINE_LINE="builtin cd $selected"
+#READLINE_POINT=${#READLINE_LINE}
+#export PS1='\u@\h\[${c_sgr0}\]:\W\[${c_sgr0}\] $(parse_branch)\$ '
+    fi
+}
+bind -x '"\C-]": peco-src'
+
+export HISTFILESIZE=
+export HISTSIZE=
+
+
