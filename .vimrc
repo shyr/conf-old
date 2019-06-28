@@ -83,9 +83,9 @@ set wildchar=<Tab> wildmenu wildmode=full
 "set cinkeys=0{,0},!^F,o,O,e " default is: 0{,0},0),:,0#,!^F,o,O,e
 "set smartindent
 "set noautoindent
-"set softtabstop=4    
-"set tabstop=4    
-"set shiftwidth=4    
+set softtabstop=4    
+set tabstop=4    
+set shiftwidth=4    
 "set expandtab    
 "set nu
 "filetype plugin indent on
